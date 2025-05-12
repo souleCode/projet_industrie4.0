@@ -1,0 +1,12 @@
+[
+    {
+        "name": "PC-1-musa",
+        "ip": "192.168.11.111",
+        "status": "online"
+    },
+    {
+        "name": "PC-2-blessings",
+        "ip": "192.168.11.106",
+        "status": "online"
+    }
+]

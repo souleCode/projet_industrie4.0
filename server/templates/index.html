@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote PC Control Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Remote PC Control Dashboard 🚀</h1>
+
+    <div id="login-form">
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">🔐 Login</button>
+    </div>
+
+    <div id="pc-list" style="display:none;">
+        <div>
+            <label for="status-filter">Filter by Status:</label>
+            <select id="status-filter" onchange="loadPCs()">
+                <option value="all">All</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+            </select>
+        </div>
+
+        <button id="shutdown-online-btn" onclick="shutdownAllOnline()" style="margin-top: 10px;">🛑 Shutdown All Online PCs</button>
+        <button id="schedule-shutdown-btn" style="margin-top: 10px;" onclick="scheduleShutdown()">⏰ Schedule Daily Shutdown</button>
+
+        <div id="pc-list-content">
+            <!-- PCs will be loaded here -->
+        </div>
+    </div>
+
+    <button id="refresh-btn" onclick="pingPCs()" style="display:none;">🔄 Refresh Status</button>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

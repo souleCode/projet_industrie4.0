@@ -1,0 +1,6 @@
+{
+    "server_url": "http://192.168.11.114:5000",
+    "secret_key": "your-secret-key",
+    "pc_name": "PC-1-musa",
+    "pc_ip": "192.168.11.111"
+}
