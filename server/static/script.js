@@ -1,100 +1,141 @@
 const serverUrl = "http://localhost:5000";
 
-function login() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-
-    fetch(`${serverUrl}/login`, {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.token) {
-            alert("Login successful!");
+// ======================
+// Login Page Handling
+// ======================
+if (document.getElementById('email')) {
+    document.querySelector('form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        fetch(`${serverUrl}/login`, {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: email, password })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Invalid credentials');
+            return response.json();
+        })
+        .then(data => {
             localStorage.setItem("jwt_token", data.token);
-            document.getElementById("login-form").style.display = "none";
-            document.getElementById("pc-list").style.display = "block";
-            document.getElementById("refresh-btn").style.display = "block";
-            loadPCs(); // Load the PCs initially
-        } else {
-            alert("Invalid credentials.");
-        }
-    })
-    .catch(error => console.error("Error during login:", error));
+            window.location.href = "/dashboard";
+        })
+        .catch(error => {
+            alert(error.message);
+            console.error("Login error:", error);
+        });
+    });
 }
 
-function loadPCs() {
-    const token = localStorage.getItem("jwt_token");
-    const status = document.getElementById("status-filter").value;  // Get filter value
+// ======================
+// Dashboard Handling
+// ======================
+if (document.querySelector('.pcs-table')) {
+    // Authentication check
+    if (!localStorage.getItem("jwt_token")) {
+        window.location.href = "/login";
+    }
 
-    fetch(`${serverUrl}/list-pcs?status=${status}`, {
-        method: "GET",
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+    // Event Listeners
+    document.querySelector('.logout-btn').addEventListener('click', () => {
+        localStorage.removeItem("jwt_token");
+        window.location.href = "/login";
+    });
+
+    document.querySelector('.action-btn.shutdown').addEventListener('click', shutdownAllOnline);
+    document.getElementById('refresh-pcs-btn').addEventListener('click', pingPCs);
+
+    // Initial load
+    loadPCs();
+    setInterval(loadPCs, 30000);
+}
+
+// ======================
+// Core Functions
+// ======================
+function loadPCs() {
+    fetch(`${serverUrl}/list-pcs`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem("jwt_token")}` }
     })
     .then(response => response.json())
-    .then(data => {
-        const listDiv = document.getElementById("pc-list-content");
-        listDiv.innerHTML = "";
-
-        data.forEach(pc => {
-            const pcDiv = document.createElement("div");
-            pcDiv.className = "pc-item";
-            pcDiv.innerHTML = `
-                <strong>${pc.name} (${pc.ip})</strong> - ${pc.status}
-                <button onclick="shutdownPC('${pc.ip}')">🔴 Shutdown</button>
+    .then(pcs => {
+        const tbody = document.querySelector('.pcs-table tbody');
+        tbody.innerHTML = '';
+        
+        pcs.forEach(pc => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${pc.name}</td>
+                <td>${pc.ip}</td>
+                <td><span class="status ${pc.status}">${pc.status === 'online' ? 'Online' : 'Offline'}</span></td>
+                <td><button class="shutdown-btn" onclick="shutdownPC('${pc.ip}')">Shutdown</button></td>
             `;
-            listDiv.appendChild(pcDiv);
+            tbody.appendChild(row);
         });
     })
     .catch(error => console.error("Error loading PCs:", error));
 }
 
 function shutdownPC(ip) {
-    const token = localStorage.getItem("jwt_token");
     fetch(`${serverUrl}/trigger-shutdown`, {
         method: "POST",
         headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${localStorage.getItem("jwt_token")}`,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ name: ip })
     })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message || data.error);
-        loadPCs(); // Refresh the list
+    .then(response => {
+        if (!response.ok) throw new Error('Shutdown failed');
+        loadPCs();
+        alert('Shutdown command sent successfully');
     })
-    .catch(error => console.error("Error shutting down PC:", error));
+    .catch(error => {
+        alert(error.message);
+        console.error("Shutdown error:", error);
+    });
 }
 
 function shutdownAllOnline() {
-    const token = localStorage.getItem("jwt_token");
-
     fetch(`${serverUrl}/shutdown-all-online`, {
         method: "POST",
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem("jwt_token")}` }
     })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        loadPCs(); // Refresh the list
+    .then(response => {
+        if (!response.ok) throw new Error('Global shutdown failed');
+        loadPCs();
+        alert('Shutdown command sent to all online PCs');
     })
-    .catch(error => console.error("Error shutting down all online PCs:", error));
+    .catch(error => {
+        alert(error.message);
+        console.error("Global shutdown error:", error);
+    });
+}
+
+function pingPCs() {
+    fetch(`${serverUrl}/ping-pcs`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem("jwt_token")}` }
+    })
+    .then(() => {
+        loadPCs();
+        alert('PC statuses refreshed');
+    })
+    .catch(error => console.error("Refresh error:", error));
+}
+
+// ======================
+// Schedule Shutdown Function
+// ======================
+if (document.getElementById('schedule-shutdown-btn')) {
+    document.getElementById('schedule-shutdown-btn').addEventListener('click', scheduleShutdown);
 }
 
 function scheduleShutdown() {
-    const shutdownTime = prompt("Enter time for shutdown (24-hour format: HH:MM):");
-
+    const shutdownTime = prompt("Entrez l'heure d'extinction (format 24h HH:MM):");
+    
     if (shutdownTime) {
-        alert(`Shutdown scheduled for ${shutdownTime}`);
         fetch(`${serverUrl}/schedule-shutdown`, {
             method: "POST",
             headers: {
@@ -103,29 +144,16 @@ function scheduleShutdown() {
             },
             body: JSON.stringify({ time: shutdownTime })
         })
-        .then(response => response.json())
-        .then(data => {
-            alert(`Shutdown scheduled for ${shutdownTime}`);
+        .then(response => {
+            if (!response.ok) throw new Error('Échec de la planification');
+            alert(`Extinction planifiée pour ${shutdownTime}`);
         })
-        .catch(error => console.error("Error scheduling shutdown:", error));
+        .catch(error => {
+            alert(error.message);
+            console.error("Erreur de planification:", error);
+        });
     }
 }
 
-function pingPCs() {
-    const token = localStorage.getItem("jwt_token");
-    fetch(`${serverUrl}/ping-pcs`, {
-        method: "GET",
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert("Status refreshed!");
-        loadPCs(); // Refresh the list
-    })
-    .catch(error => console.error("Error pinging PCs:", error));
-}
-
-// Auto-refresh every 30 seconds
-setInterval(loadPCs, 30000);
+// Make functions available globally
+window.shutdownPC = shutdownPC;
