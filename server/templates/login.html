@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Remote PCs Shutdown</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f5f7fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { background-color: white; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 450px; padding: 40px; text-align: center; }
+        h1 { color: #2c3e50; margin-bottom: 15px; font-size: 24px; font-weight: 600; }
+        .description { color: #7f8c8d; margin-bottom: 30px; font-size: 14px; line-height: 1.5; }
+        .divider { border: 0; height: 1px; background: #e0e0e0; margin: 25px 0; }
+        .login-title { text-align: left; color: #2c3e50; margin-bottom: 20px; font-size: 16px; font-weight: 500; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; color: #2c3e50; font-size: 14px; font-weight: 500; }
+        input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; transition: border-color 0.3s; }
+        input:focus { outline: none; border-color: #3498db; }
+        .login-btn { background-color: #3498db; color: white; border: none; padding: 12px 20px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background-color 0.3s; margin-top: 10px; }
+        .login-btn:hover { background-color: #2980b9; }
+        .register-link { margin-top: 20px; font-size: 14px; color: #7f8c8d; }
+        .register-link a { color: #3498db; text-decoration: none; font-weight: 500; }
+        .register-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Remote PCs Shutdown Application</h1>
+        <p class="description">
+            Cette application vous facilite la gestion de vos PCs à distance sans complication particulière
+        </p>
+        <hr class="divider">
+        <h2 class="login-title">Veuillez vous connecter avec vos informations</h2>
+        <form action="javascript:void(0);">
+            <div class="form-group">
+                <label for="email">Votre email académique</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="login-btn">Connexion</button>
+        </form>
+        <p class="register-link">
+            Pas encore de compte? <a href="#">Créez-en un</a>
+        </p>
+    </div>
+    <script src="/static/script_2.0.js"></script>
+</body>
+</html>
